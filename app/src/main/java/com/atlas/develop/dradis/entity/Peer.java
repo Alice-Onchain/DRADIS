@@ -1,9 +1,11 @@
 package com.atlas.develop.dradis.entity;
 
+import java.net.InetAddress;
+
 public class Peer {
     private long timestamp;
     private long services;
-    private String ip;
+    private InetAddress ip;
     private int port;
 
     @Override
@@ -25,7 +27,7 @@ public class Peer {
         this.services = services;
     }
 
-    public void setIp(String ip) {
+    public void setIp(InetAddress ip) {
         this.ip = ip;
     }
 
@@ -42,7 +44,7 @@ public class Peer {
         return services;
     }
 
-    public String getIp() {
+    public InetAddress getIp() {
         return ip;
     }
 

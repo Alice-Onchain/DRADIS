@@ -4,6 +4,7 @@ import com.atlas.develop.dradis.entity.Peer;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -12,7 +13,6 @@ public class PeerDataReaderTest {
 
     private static final String PEERS_DAT_PATH = "peers.dat";
     private final PeerDataReader service = new PeerDataReader();
-
 
     @Test
     void testGetPeersInputStream() {
@@ -30,13 +30,23 @@ public class PeerDataReaderTest {
 
         List<Peer> peers = service.readPeers("peers.dat");
 
-        assertEquals(1, peers.size());
+        assertEquals(8, peers.size());
 
         Peer peer = peers.getFirst();
-        assertEquals("192.168.0.1", peer.getIp());
+        assertTrue(
+                IpUtils.isIpv4Equivalent(
+                        InetAddress.getByName("192.168.0.82"), peer.getIp()));
         assertEquals(8333, peer.getPort());
-        assertEquals(123456789L, peer.getTimestamp());
+        assertEquals(1720000000L, peer.getTimestamp());
         assertEquals(1L, peer.getServices());
+
+        peer = peers.get(4);
+        assertTrue(
+                IpUtils.isIpv4Equivalent(
+                        InetAddress.getByName("127.30.28.127"), peer.getIp()));
+        assertEquals(8333, peer.getPort());
+        assertEquals(172001230L, peer.getTimestamp());
+        assertEquals(3L, peer.getServices());
     }
 
     @Test

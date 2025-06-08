@@ -3,8 +3,70 @@
  */
 package com.atlas.develop.dradis;
 
+import com.atlas.develop.dradis.entity.Peer;
+import com.atlas.develop.dradis.services.HandShakeService;
+import com.atlas.develop.dradis.services.PeerDataReader;
+import com.atlas.develop.dradis.services.PeerDataWriter;
+import com.atlas.develop.dradis.services.PeerDiscovery;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class Dradis {
     public static void main(String[] args) {
+
+        final String PEERS_DAT_PATH = "peers.dat";
+
+        PeerDataReader reader = new PeerDataReader();
+        PeerDataWriter writer = new PeerDataWriter();
+        List<Peer> peers;
+
+        try {
+            peers = reader.readPeers(PEERS_DAT_PATH);
+        } catch (FileNotFoundException fnfe){
+            System.out.println("Pensez a créer un fichier peers.dat dans le repertoire resource");
+            peers = List.of();
+        } catch (IOException e) {
+            System.out.println("Fichier peers.dat introuvable ou vide, tentative de fallback...");
+            peers = List.of(); // fallback
+        }
+
+        if (peers.isEmpty()) {
+            // 🔌 Tentative de connexion à un peer connu (DNS seed)
+            PeerDiscovery PeerDiscovery = new PeerDiscovery();
+            List<InetAddress> discoveredPeers = PeerDiscovery.discoverFromDNSSeed("seed.bitcoin.sipa.be");
+
+            // Ensuite les transformer en Peer et écrire dans peers.dat
+            List<Peer> peerList = discoveredPeers
+                    .stream()
+                    .map(ip -> {
+                        Peer peer = new Peer();
+                        peer.setIp(ip);
+                        peer.setTimestamp(System.currentTimeMillis() / 1000L);
+                        peer.setServices(0); // ou un default
+                        peer.setPort(8333);  // port Bitcoin
+                        return peer;
+                    })
+                    .collect(Collectors.toList());
+
+            try {
+                writer.writePeers("app/src/main/resources/peers.dat", peerList);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        } else {
+            System.out.println("Peers existants : " + peers.size());
+
+            HandShakeService handShakeService = new HandShakeService();
+
+            peers.forEach(handShakeService::performHandshake);
+            // handshake
+
+        }
 
     }
 }

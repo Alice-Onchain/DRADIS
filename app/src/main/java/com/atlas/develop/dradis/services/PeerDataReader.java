@@ -2,7 +2,12 @@ package com.atlas.develop.dradis.services;
 
 import com.atlas.develop.dradis.entity.Peer;
 
-import java.io.*;
+
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +45,6 @@ public class PeerDataReader {
     }
 
     private Peer readOnePeer(DataInputStream dis) throws IOException {
-        Peer peer = new Peer();
 
         long timestamp = Long.reverseBytes(dis.readLong()); // endian correction
         long services = Long.reverseBytes(dis.readLong());
@@ -51,9 +55,10 @@ public class PeerDataReader {
 
         int port = Short.toUnsignedInt(Short.reverseBytes(dis.readShort())); // network order (big-endian)
 
+        Peer peer = new Peer();
         peer.setTimestamp(timestamp);
         peer.setServices(services);
-        peer.setIp(ip.getHostAddress());
+        peer.setIp(ip);
         peer.setPort(port);
 
         return peer;
