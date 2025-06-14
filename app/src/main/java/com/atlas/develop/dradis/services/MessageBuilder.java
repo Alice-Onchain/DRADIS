@@ -2,115 +2,118 @@ package com.atlas.develop.dradis.services;
 
 import com.atlas.develop.dradis.entity.Peer;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Random;
+import java.security.MessageDigest;
+import java.util.Arrays;
 
 public class MessageBuilder {
 
-    private static final int PROTOCOL_VERSION = 70015;
-    private static final long NODE_NETWORK = 1L;
-    private static final long TIMESTAMP = System.currentTimeMillis() / 1000L;
-    private static final int START_HEIGHT = 0;
-    private static final String USER_AGENT = "/Dradis:0.1/";
+    public static byte[] buildVersionMessage(Peer peer) throws Exception {
+        // Pour les adresses "from", tu peux définir une IP fixe (ton IP locale, ou autre)
+        InetAddress fromIp = InetAddress.getByName("123.45.67.89");
+        int fromPort = 8333;
 
-    public static byte[] buildVersionMessage(Peer peer) throws IOException {
-        ByteArrayOutputStream payload = new ByteArrayOutputStream();
+        byte[] payload = buildVersionPayload(
+                peer.getIp().getHostAddress(), peer.getPort(),
+                fromIp.getHostAddress(), fromPort,
+                0x1234567890ABCDEFL,
+                "/Satoshi:0.17.2/",
+                0,
+                false
+        );
 
-        // version
-        payload.write(intToLittleEndian(PROTOCOL_VERSION));
-        // services (local)
-        payload.write(longToLittleEndian(NODE_NETWORK));
-        // timestamp
-        payload.write(longToLittleEndian(TIMESTAMP));
-        // addr_recv
-        payload.write(longToLittleEndian(NODE_NETWORK));                    // services
-        payload.write(ipToIPv6(peer.getIp().getAddress()));                // 16 bytes IP
-        payload.write(shortToBigEndian((short) peer.getPort()));           // port
-        // addr_from (127.0.0.1:8333)
-        payload.write(longToLittleEndian(NODE_NETWORK));
-        payload.write(ipToIPv6(InetAddress.getByName("127.0.0.1").getAddress()));
-        payload.write(shortToBigEndian((short) 8333));
-        // nonce
-        payload.write(longToLittleEndian(new Random().nextLong()));
-        // user agent (as var_str)
-        payload.write(encodeVarStr(USER_AGENT));
-        // start_height
-        payload.write(intToLittleEndian(START_HEIGHT));
-        // relay (optional)
-        payload.write(1); // true
-
-        byte[] payloadBytes = payload.toByteArray();
-        return wrapMessage("version", payloadBytes);
+        return buildMessage("version", payload);
     }
 
-    public static byte[] buildVerackMessage() throws IOException {
-        return wrapMessage("verack", new byte[0]);
-    }
+    private static byte[] buildMessage(String command, byte[] payload) throws Exception {
+        ByteBuffer buffer = ByteBuffer.allocate(24 + payload.length);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
 
-    private static byte[] wrapMessage(String command, byte[] payload) throws IOException {
-        ByteArrayOutputStream message = new ByteArrayOutputStream();
+        // Magic mainnet
+        buffer.putInt(0xD9B4BEF9);
 
-        // Magic (mainnet)
-        message.write(intToBytes(0xD9B4BEF9));
-        // Command (padded to 12 bytes)
-        byte[] commandBytes = new byte[12];
-        byte[] commandRaw = command.getBytes();
-        System.arraycopy(commandRaw, 0, commandBytes, 0, commandRaw.length);
-        message.write(commandBytes);
+        // Command (12 bytes, zero padded)
+        byte[] cmdBytes = new byte[12];
+        byte[] cmdSrc = command.getBytes("ASCII");
+        System.arraycopy(cmdSrc, 0, cmdBytes, 0, cmdSrc.length);
+        buffer.put(cmdBytes);
+
         // Payload length
-        message.write(intToBytes(payload.length));
-        // Checksum (first 4 bytes of double SHA256)
-        byte[] checksum = sha256(sha256(payload));
-        message.write(checksum, 0, 4);
+        buffer.putInt(payload.length);
+
+        // Checksum = first 4 bytes of double SHA256(payload)
+        byte[] checksum = Arrays.copyOf(doubleSha256(payload), 4);
+        buffer.put(checksum);
+
         // Payload
-        message.write(payload);
+        buffer.put(payload);
 
-        return message.toByteArray();
+        return buffer.array();
     }
 
-    // Utility conversions
+    private static byte[] buildVersionPayload(String addrRecvIp, int addrRecvPort,
+                                              String addrFromIp, int addrFromPort,
+                                              long nonce, String userAgent,
+                                              int startHeight, boolean relay) throws Exception {
+        ByteBuffer buffer = ByteBuffer.allocate(86 + userAgent.length());
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
 
-    private static byte[] intToLittleEndian(int val) {
-        return ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(val).array();
+        int version = 70015;
+        long services = 0;
+        long timestamp = System.currentTimeMillis() / 1000;
+
+        buffer.putInt(version);
+        buffer.putLong(services);
+        buffer.putLong(timestamp);
+
+        // addr_recv (services + IP + port)
+        buffer.putLong(0L); // services for addr_recv
+        buffer.put(ipToBytes(addrRecvIp));
+        buffer.putShort((short) addrRecvPort);
+
+        // addr_from (services + IP + port)
+        buffer.putLong(0L); // services for addr_from
+        buffer.put(ipToBytes(addrFromIp));
+        buffer.putShort((short) addrFromPort);
+
+        buffer.putLong(nonce);
+
+        // user_agent length (varint) + user_agent bytes
+        buffer.put((byte) userAgent.length());
+        buffer.put(userAgent.getBytes("ASCII"));
+
+        buffer.putInt(startHeight);
+        buffer.put((byte) (relay ? 1 : 0));
+
+        return Arrays.copyOf(buffer.array(), buffer.position());
     }
 
-    private static byte[] longToLittleEndian(long val) {
-        return ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN).putLong(val).array();
-    }
+    private static byte[] ipToBytes(String ip) throws Exception {
+        InetAddress inetAddress = InetAddress.getByName(ip);
+        byte[] raw = inetAddress.getAddress(); // retourne déjà 4 bytes (IPv4) ou 16 bytes (IPv6)
 
-    private static byte[] shortToBigEndian(short val) {
-        return ByteBuffer.allocate(2).order(ByteOrder.BIG_ENDIAN).putShort(val).array();
-    }
-
-    private static byte[] intToBytes(int val) {
-        return ByteBuffer.allocate(4).putInt(val).array();
-    }
-
-    private static byte[] ipToIPv6(byte[] ipv4) {
-        byte[] ip = new byte[16];
-        System.arraycopy(ipv4, 0, ip, 12, ipv4.length);
-        return ip;
-    }
-
-    private static byte[] encodeVarStr(String str) {
-        byte[] strBytes = str.getBytes();
-        byte[] result = new byte[1 + strBytes.length];
-        result[0] = (byte) strBytes.length; // varint prefix
-        System.arraycopy(strBytes, 0, result, 1, strBytes.length);
-        return result;
-    }
-
-    private static byte[] sha256(byte[] input) throws IOException {
-        try {
-            java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
-            return digest.digest(input);
-        } catch (Exception e) {
-            throw new IOException("SHA-256 error", e);
+        if (raw.length == 4) {
+            // IPv4, on convertit en IPv4-mapped IPv6
+            byte[] result = new byte[16];
+            Arrays.fill(result, (byte) 0);
+            result[10] = (byte) 0xFF;
+            result[11] = (byte) 0xFF;
+            System.arraycopy(raw, 0, result, 12, 4);
+            return result;
+        } else if (raw.length == 16) {
+            // IPv6, on renvoie directement
+            return raw;
+        } else {
+            throw new IllegalArgumentException("Adresse IP invalide: " + ip);
         }
+    }
+
+    private static byte[] doubleSha256(byte[] data) throws Exception {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] first = digest.digest(data);
+        return digest.digest(first);
     }
 
 }
