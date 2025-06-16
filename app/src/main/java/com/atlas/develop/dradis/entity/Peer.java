@@ -2,19 +2,22 @@ package com.atlas.develop.dradis.entity;
 
 import java.net.InetAddress;
 
-public class Peer {
+public class Peer extends Node {
     private long timestamp;
     private long services;
-    private InetAddress ip;
-    private int port;
+
+    public Peer(InetAddress ip, int port) {
+        super(ip, port);
+    }
+
 
     @Override
     public String toString() {
         return "Peer{" +
                 "timestamp=" + timestamp +
                 ", services=" + services +
-                ", ip='" + ip + '\'' +
-                ", port=" + port +
+                ", ip='" + super.getIp() + '\'' +
+                ", port=" + super.getPort() +
                 '}';
     }
 
@@ -27,14 +30,6 @@ public class Peer {
         this.services = services;
     }
 
-    public void setIp(InetAddress ip) {
-        this.ip = ip;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
 
     public long getTimestamp() {
         return timestamp;
@@ -44,11 +39,4 @@ public class Peer {
         return services;
     }
 
-    public InetAddress getIp() {
-        return ip;
-    }
-
-    public int getPort() {
-        return port;
-    }
 }

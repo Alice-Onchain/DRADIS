@@ -1,6 +1,7 @@
 package com.atlas.develop.dradis.services;
 
 import java.net.InetAddress;
+import java.util.Arrays;
 
 public class IpUtils {
 
@@ -22,5 +23,25 @@ public class IpUtils {
         }
 
         return true;
+    }
+
+    public static byte[] ipToBytes(String ip) throws Exception {
+        InetAddress inetAddress = InetAddress.getByName(ip);
+        byte[] raw = inetAddress.getAddress(); // retourne déjà 4 bytes (IPv4) ou 16 bytes (IPv6)
+
+        if (raw.length == 4) {
+            // IPv4, on convertit en IPv4-mapped IPv6
+            byte[] result = new byte[16];
+            Arrays.fill(result, (byte) 0);
+            result[10] = (byte) 0xFF;
+            result[11] = (byte) 0xFF;
+            System.arraycopy(raw, 0, result, 12, 4);
+            return result;
+        } else if (raw.length == 16) {
+            // IPv6, on renvoie directement
+            return raw;
+        } else {
+            throw new IllegalArgumentException("Adresse IP invalide: " + ip);
+        }
     }
 }

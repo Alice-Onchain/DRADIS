@@ -55,11 +55,9 @@ public class PeerDataReader {
 
         int port = Short.toUnsignedInt(Short.reverseBytes(dis.readShort())); // network order (big-endian)
 
-        Peer peer = new Peer();
+        Peer peer = new Peer(ip, port);
         peer.setTimestamp(timestamp);
         peer.setServices(services);
-        peer.setIp(ip);
-        peer.setPort(port);
 
         return peer;
     }

@@ -11,20 +11,19 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class PeerDataWriterTest {
 
+    private static final int BTC_PORT = 8333;
+    private static final int TOR_PORT = 8334;
+
     @Test
     public void testWriteAndReadPeers() throws Exception {
         // Préparation des peers de test
-        Peer peer1 = new Peer();
+        Peer peer1 = new Peer(InetAddress.getByName("127.0.0.1"), BTC_PORT);
         peer1.setTimestamp(1720000000L);
         peer1.setServices(1L);
-        peer1.setIp(InetAddress.getByName("127.0.0.1"));
-        peer1.setPort(8333);
 
-        Peer peer2 = new Peer();
+        Peer peer2 = new Peer(InetAddress.getByName("192.168.0.42"), TOR_PORT);
         peer2.setTimestamp(1720000100L);
         peer2.setServices(1L);
-        peer2.setIp(InetAddress.getByName("192.168.0.42"));
-        peer2.setPort(8334);
 
         List<Peer> originalPeers = List.of(peer1, peer2);
 
