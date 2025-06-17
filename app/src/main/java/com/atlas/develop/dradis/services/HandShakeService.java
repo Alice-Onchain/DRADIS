@@ -53,7 +53,7 @@ public class HandShakeService {
                 System.out.println("Payload reçu (" + payloadResp.length + " bytes) :");
                 System.out.println(bytesToHex(payloadResp));
 
-                BitcoinVersionParser payloadParser = new BitcoinVersionParser(payloadResp)
+                BitcoinVersionParser payloadParser = new BitcoinVersionParser(payloadResp);
                 payloadParser.decode();
             }
 
