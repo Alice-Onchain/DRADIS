@@ -31,7 +31,7 @@ public class BitcoinVersionParser {
         // address recue
         decodeAddress("from");
 
-        long nonce = buf.getLong();
+        long nonce = buffer.getLong();
         System.out.println("Nonce: 0x" + Long.toHexString(nonce));
 
         // User agent
