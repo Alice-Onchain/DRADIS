@@ -7,74 +7,75 @@ import java.util.Arrays;
 
 public class BitcoinVersionParser {
 
-    public static void payloadDecode(byte[] payload) throws Exception {
-        ByteBuffer buf = ByteBuffer.wrap(payload);
-        buf.order(ByteOrder.LITTLE_ENDIAN);
+    private ByteBuffer buffer;
 
-        int version = buf.getInt();
-        long services = buf.getLong();
-        long timestamp = buf.getLong();
+    // Constructeur qui initialise le ByteBuffer
+    public BitcoinVersionParser(byte[] payload) {
+        this.buffer = ByteBuffer.wrap(payload);
+        this.buffer.order(ByteOrder.LITTLE_ENDIAN);
+    }
+
+    public void decode(byte[] payload) throws Exception {
+
+        int version = readInt();
+        long services = readLong();
+        long timestamp = readLong();
 
         System.out.println("Version: " + version);
         System.out.println("Services: 0x" + Long.toHexString(services));
         System.out.println("Timestamp: " + timestamp + " (" + new java.util.Date(timestamp * 1000) + ")");
 
-        // addr_recv (26 bytes): services(8) + ip(16) + port(2)
-        long recvServices = buf.getLong();
-        byte[] recvIpBytes = new byte[16];
-        buf.get(recvIpBytes);
-        int recvPort = Short.toUnsignedInt(buf.getShort());
-
-        System.out.println("Addr recv services: 0x" + Long.toHexString(recvServices));
-        System.out.println("Addr recv IP: " + inetAddressFromBytes(recvIpBytes).getHostAddress());
-        System.out.println("Addr recv port: " + recvPort);
-
-        // addr_from (26 bytes): services(8) + ip(16) + port(2)
-        long fromServices = buf.getLong();
-        byte[] fromIpBytes = new byte[16];
-        buf.get(fromIpBytes);
-        int fromPort = Short.toUnsignedInt(buf.getShort());
-
-        System.out.println("Addr from services: 0x" + Long.toHexString(fromServices));
-        System.out.println("Addr from IP: " + inetAddressFromBytes(fromIpBytes).getHostAddress());
-        System.out.println("Addr from port: " + fromPort);
+        // address recue
+        decodeAddress("recv");
+        
+        // address recue
+        decodeAddress("from");
 
         long nonce = buf.getLong();
         System.out.println("Nonce: 0x" + Long.toHexString(nonce));
 
-        // user_agent (var_str)
-        int userAgentLength = Byte.toUnsignedInt(buf.get());
-        byte[] userAgentBytes = new byte[userAgentLength];
-        buf.get(userAgentBytes);
-        String userAgent = new String(userAgentBytes, "ASCII");
+        // User agent
+        String userAgent = readVarStr();
         System.out.println("User agent: " + userAgent);
 
-        int startHeight = buf.getInt();
+        int startHeight = readInt();
         System.out.println("Start height: " + startHeight);
 
-        if (buf.hasRemaining()) {
-            byte relayByte = buf.get();
+        if (hasRemaining()) {
+            byte relayByte = buffer.get();
             System.out.println("Relay: " + (relayByte != 0));
         } else {
             System.out.println("Relay: not present");
         }
     }
 
-    private static InetAddress inetAddressFromBytes(byte[] bytes) throws Exception {
-        // Si adresse IPv4-mapped IPv6 (::ffff:xxxx), retourne IPv4 simple
-        if (bytes.length == 16) {
-            boolean isIPv4Mapped = true;
-            for (int i = 0; i < 10; i++) {
-                if (bytes[i] != 0) {
-                    isIPv4Mapped = false;
-                    break;
-                }
-            }
-            if (isIPv4Mapped && bytes[10] == (byte) 0xff && bytes[11] == (byte) 0xff) {
-                return InetAddress.getByAddress(Arrays.copyOfRange(bytes, 12, 16));
-            }
-            return InetAddress.getByAddress(bytes);
-        }
-        throw new IllegalArgumentException("Invalid IP bytes length: " + bytes.length);
+    private int readInt() {
+        return buffer.getInt();
+    }
+
+    private long readLong() {
+        return buffer.getLong();
+    }
+
+    private void decodeAddress(String prefix) throws Exception {
+        long services = readLong();
+        byte[] ipBytes = new byte[16];
+        buffer.get(ipBytes);
+        int port = Short.toUnsignedInt(buffer.getShort());
+
+        System.out.println("Addr " + prefix.toLowerCase() + " services: 0x" + Long.toHexString(services));
+        System.out.println("Addr " + prefix.toLowerCase() + " IP: " + inetAddressFromBytes(ipBytes).getHostAddress());
+        System.out.println("Addr " + prefix.toLowerCase() + " port: " + port);
+    }
+
+    private String readVarStr() throws Exception {
+        int length = Byte.toUnsignedInt(buffer.get());
+        byte[] strBytes = new byte[length];
+        buffer.get(strBytes);
+        return new String(strBytes, "ASCII");
+    }
+
+    private boolean hasRemaining() {
+        return buffer.hasRemaining();
     }
 }
