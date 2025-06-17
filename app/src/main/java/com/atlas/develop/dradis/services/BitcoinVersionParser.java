@@ -15,7 +15,7 @@ public class BitcoinVersionParser {
         this.buffer.order(ByteOrder.LITTLE_ENDIAN);
     }
 
-    public void decode(byte[] payload) throws Exception {
+    public void decode() throws Exception {
 
         int version = readInt();
         long services = readLong();
