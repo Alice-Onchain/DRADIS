@@ -44,4 +44,21 @@ public class IpUtils {
             throw new IllegalArgumentException("Adresse IP invalide: " + ip);
         }
     }
+
+    public static InetAddress inetAddressFromBytes(byte[] bytes) throws Exception {
+        if (bytes.length == 16) {
+            boolean isIPv4Mapped = true;
+            for (int i = 0; i < 10; i++) {
+                if (bytes[i] != 0) {
+                    isIPv4Mapped = false;
+                    break;
+                }
+            }
+            if (isIPv4Mapped && bytes[10] == (byte) 0xff && bytes[11] == (byte) 0xff) {
+                return InetAddress.getByAddress(Arrays.copyOfRange(bytes, 12, 16));
+            }
+            return InetAddress.getByAddress(bytes);
+        }
+        throw new IllegalArgumentException("Invalid IP bytes length: " + bytes.length);
+    }
 }
