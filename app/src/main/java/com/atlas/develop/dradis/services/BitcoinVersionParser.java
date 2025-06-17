@@ -64,7 +64,7 @@ public class BitcoinVersionParser {
         int port = Short.toUnsignedInt(buffer.getShort());
 
         System.out.println("Addr " + prefix.toLowerCase() + " services: 0x" + Long.toHexString(services));
-        System.out.println("Addr " + prefix.toLowerCase() + " IP: " + inetAddressFromBytes(ipBytes).getHostAddress());
+        System.out.println("Addr " + prefix.toLowerCase() + " IP: " + IpUtils.inetAddressFromBytes(ipBytes).getHostAddress());
         System.out.println("Addr " + prefix.toLowerCase() + " port: " + port);
     }
 
