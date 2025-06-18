@@ -1,0 +1,29 @@
+plugins {
+    id 'java'
+    id "org.sonarqube" version "4.4.1.3373"
+}
+
+sonarqube {
+    properties {
+        property "sonar.projectKey", "ton-projet-key"  // change par ton project key Sonar
+        property "sonar.host.url", System.getenv("SONAR_HOST_URL") ?: "http://localhost:9000"
+        property "sonar.login", System.getenv("SONAR_TOKEN") ?: ""
+    }
+}
+
+
+group = 'com.atlas.develop'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}
