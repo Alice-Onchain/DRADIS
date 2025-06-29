@@ -3,15 +3,6 @@ plugins {
     id "org.sonarqube" version "4.4.1.3373"
 }
 
-sonarqube {
-    properties {
-        property "sonar.projectKey", "ton-projet-key"  // change par ton project key Sonar
-        property "sonar.host.url", System.getenv("SONAR_HOST_URL") ?: "http://localhost:9000"
-        property "sonar.login", System.getenv("SONAR_TOKEN") ?: ""
-    }
-}
-
-
 group = 'com.atlas.develop'
 version = '1.0-SNAPSHOT'
 
@@ -26,4 +17,20 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+// Only configure SonarQube if running in CI
+if (System.getenv("CI") == "true") {
+    sonar {
+        properties {
+            property "sonar.projectKey", "Alice-Onchain_DRADIS"
+            property "sonar.organization", "alice-onchain"
+            property "sonar.host.url", "https://sonarcloud.io"
+        }
+    }
+} else {
+    // Optionally, you can disable the sonar task locally to avoid errors if developers try to run it
+    tasks.named("sonar").configure {
+        enabled = false
+    }
 }
