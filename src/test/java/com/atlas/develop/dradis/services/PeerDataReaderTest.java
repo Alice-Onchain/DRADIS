@@ -9,7 +9,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class PeerDataReaderTest {
+class PeerDataReaderTest {
 
     private static final String PEERS_DAT_PATH = "peers.dat";
     private final PeerDataReader service = new PeerDataReader();
