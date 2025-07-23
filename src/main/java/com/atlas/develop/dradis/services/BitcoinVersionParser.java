@@ -2,8 +2,6 @@ package com.atlas.develop.dradis.services;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.net.InetAddress;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,9 +25,9 @@ public class BitcoinVersionParser {
         long services = readLong();
         long timestamp = readLong();
 
-        logger.log(Level.INFO, "Version: " + version);
-        logger.log(Level.INFO, "Services: 0x" + Long.toHexString(services));
-        logger.log(Level.INFO, "Timestamp: " + timestamp + " (" + new java.util.Date(timestamp * 1000) + ")");
+        logger.log(Level.INFO, "Version: {}", version);
+        logger.log(Level.INFO, "Services: 0x{}", Long.toHexString(services));
+        logger.log(Level.INFO, "Timestamp: {} ({})", timestamp, new java.util.Date(timestamp * 1000));
 
         // address recue
         decodeAddress("recv");
@@ -38,18 +36,18 @@ public class BitcoinVersionParser {
         decodeAddress("from");
 
         long nonce = buffer.getLong();
-        logger.log(Level.INFO, "Nonce: 0x" + Long.toHexString(nonce));
+        logger.log(Level.INFO, "Nonce: 0x{}", Long.toHexString(nonce));
 
         // User agent
         String userAgent = readVarStr();
-        logger.log(Level.INFO, "User agent: " + userAgent);
+        logger.log(Level.INFO, "User agent: {}", userAgent);
 
         int startHeight = readInt();
-        logger.log(Level.INFO, "Start height: " + startHeight);
+        logger.log(Level.INFO, "Start height: {}", startHeight);
 
         if (hasRemaining()) {
             byte relayByte = buffer.get();
-            logger.log(Level.INFO, "Relay: " + (relayByte != 0));
+            logger.log(Level.INFO, "Relay: {}", (relayByte != 0));
         } else {
             logger.log(Level.INFO, "Relay: not present");
         }
