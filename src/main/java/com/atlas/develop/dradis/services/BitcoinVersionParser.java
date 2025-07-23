@@ -10,7 +10,6 @@ public class BitcoinVersionParser {
     
     private static final Logger logger = LoggerFactory.getLogger(BitcoinVersionParser.class);
     private static final String ADDR = "Addr";
-    private static final String ESPACE = " ";
     
     private ByteBuffer buffer;
 
@@ -68,9 +67,9 @@ public class BitcoinVersionParser {
         buffer.get(ipBytes);
         int port = Short.toUnsignedInt(buffer.getShort());
 
-        logger.info(ADDR + ESPACE + prefix.toLowerCase() + " services: 0x" + Long.toHexString(services));
-        logger.info(ADDR + ESPACE + prefix.toLowerCase() + " IP: " + IpUtils.inetAddressFromBytes(ipBytes).getHostAddress());
-        logger.info(ADDR + ESPACE + prefix.toLowerCase() + " port: " + port);
+        logger.info("{} {} services: 0x{}", ADDR, prefix.toLowerCase(), Long.toHexString(services));
+        logger.info("{} {} IP: {}", ADDR, prefix.toLowerCase(), IpUtils.inetAddressFromBytes(ipBytes).getHostAddress());
+        logger.info("{} {} port: {}", ADDR, prefix.toLowerCase(), port);
     }
 
     private String readVarStr() throws Exception {
