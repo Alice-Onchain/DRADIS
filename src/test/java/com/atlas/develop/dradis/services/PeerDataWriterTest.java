@@ -10,14 +10,14 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class PeerDataWriterTest {
+class PeerDataWriterTest {
 
     private static final int BTC_PORT = 8333;
     private static final int TOR_PORT = 8334;
 
     @Disabled("Need rework")
     @Test
-    public void testWriteAndReadPeers() throws Exception {
+    void testWriteAndReadPeers() throws Exception {
         // Préparation des peers de test
         Peer peer1 = new Peer(InetAddress.getByName("127.0.0.1"), BTC_PORT);
         peer1.setTimestamp(1720000000L);
