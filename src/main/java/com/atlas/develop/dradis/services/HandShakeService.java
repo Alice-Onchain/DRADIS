@@ -10,6 +10,8 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class HandShakeService {
