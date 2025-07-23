@@ -2,8 +2,6 @@ package com.atlas.develop.dradis.services;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
