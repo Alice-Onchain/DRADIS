@@ -13,6 +13,8 @@ import java.nio.ByteOrder;
 
 
 public class HandShakeService {
+    
+    private static final Logger logger = Logger.getLogger(HandShakeService.class.getName());
 
     public void performHandshake(Peer peer) {
         try (Socket socket = new Socket()) {
@@ -20,18 +22,18 @@ public class HandShakeService {
             OutputStream out = socket.getOutputStream();
             InputStream in = socket.getInputStream();
 
-            System.out.println("Connecté à " + peer.getIp() + ":" + peer.getPort());
+            logger.log(Level.INFO, "Connecté à " + peer.getIp() + ":" + peer.getPort());
 
             // 1. Envoyer le message "version"
             byte[] versionMessage = MessageBuilder.buildVersionMessage(peer);
             out.write(versionMessage);
             out.flush();
-            System.out.println("📤 Envoyé 'version' à " + peer.getIp().getHostAddress());
+            logger.log(Level.INFO, "📤 Envoyé 'version' à " + peer.getIp().getHostAddress());
 
             // 2. Lire réponse (attente de "version" ou "verack")
             byte[] header = in.readNBytes(24);
             if (header.length < 24) {
-                System.err.println("❌ Header incomplet : " + header.length + " octets");
+                logger.log(Level.SEVERE, "❌ Header incomplet : " + header.length + " octets");
                 return;
             }
 
@@ -44,23 +46,23 @@ public class HandShakeService {
             byte[] checksum = new byte[4];
             headerBuf.get(checksum);
 
-            System.out.printf("Magic: 0x%08X\n", magic);
-            System.out.println("Command: '" + command + "'");
-            System.out.println("Payload length: " + length);
+            logger.log(Level.INFO, "Magic: 0x%08X\n", magic);
+            logger.log(Level.INFO, "Command: '" + command + "'");
+            logger.log(Level.INFO, "Payload length: " + length);
 
             if(length > 0) {
                 byte[] payloadResp = in.readNBytes(length);
-                System.out.println("Payload reçu (" + payloadResp.length + " bytes) :");
-                System.out.println(bytesToHex(payloadResp));
+                logger.log(Level.INFO, "Payload reçu (" + payloadResp.length + " bytes) :");
+                logger.log(Level.INFO, bytesToHex(payloadResp));
 
                 BitcoinVersionParser payloadParser = new BitcoinVersionParser(payloadResp);
                 payloadParser.decode();
             }
 
         } catch (SocketTimeoutException e) {
-            System.err.println("⏰ Timeout de réception depuis " + peer.getIp().getHostAddress());
+            logger.log(Level.SEVERE, "⏰ Timeout de réception depuis " + peer.getIp().getHostAddress());
         } catch (IOException e) {
-            System.err.println("❌ Handshake échoué avec " + peer.getIp().getHostAddress() + " : " + e.getMessage());
+            logger.log(Level.SEVERE, "❌ Handshake échoué avec " + peer.getIp().getHostAddress() + " : " + e.getMessage());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
