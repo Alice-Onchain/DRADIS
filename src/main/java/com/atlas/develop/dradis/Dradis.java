@@ -11,8 +11,13 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Dradis {
+
+    private static final Logger logger = Logger.getLogger(Dradis.class.getName());
+    
     public static void main(String[] args) {
 
         final String PEERS_DAT_PATH = "peers.dat";
@@ -24,10 +29,10 @@ public class Dradis {
         try {
             peers = reader.readPeers(PEERS_DAT_PATH);
         } catch (FileNotFoundException fnfe){
-            System.out.println("Pensez a créer un fichier peers.dat dans le repertoire resource");
+            logger.log(Level.WARNING, "Pensez a créer un fichier peers.dat dans le repertoire resource");
             peers = List.of();
         } catch (IOException e) {
-            System.out.println("Fichier peers.dat introuvable ou vide, tentative de fallback...");
+            logger.log(Level.WARNING, "Fichier peers.dat introuvable ou vide, tentative de fallback...");
             peers = List.of(); // fallback
         }
 
@@ -45,7 +50,7 @@ public class Dradis {
                         peer.setServices(0); // ou un default
                         return peer;
                     })
-                    .collect(Collectors.toList());
+                    .toList();
 
             try {
                 writer.writePeers("app/src/main/resources/peers.dat", peerList);
@@ -54,7 +59,7 @@ public class Dradis {
             }
 
         } else {
-            System.out.println("Peers existants : " + peers.size());
+            logger.log(Level.INFO, "Peers existants : " + peers.size());
 
             HandShakeService handShakeService = new HandShakeService();
 
