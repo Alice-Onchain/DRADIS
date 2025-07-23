@@ -3,19 +3,24 @@ package com.atlas.develop.dradis.services;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class PeerDiscovery {
 
+    private static final Logger logger = LoggerFactory.getLogger(PeerDiscovery.class);
+    
     public List<InetAddress> discoverFromDNSSeed(String dnsSeed) {
         List<InetAddress> peers = new ArrayList<>();
         try {
             InetAddress[] addresses = InetAddress.getAllByName(dnsSeed);
             for (InetAddress addr : addresses) {
-                System.out.println("🎯 Peer trouvé : " + addr.getHostAddress());
+                logger.info("🎯 Peer trouvé : {}", addr.getHostAddress());
                 peers.add(addr);
             }
         } catch (Exception e) {
-            System.err.println("❌ Échec de la résolution DNS : " + e.getMessage());
+            logger.error("❌ Échec de la résolution DNS : {}", e.getMessage());
         }
         return peers;
     }
