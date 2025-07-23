@@ -4,10 +4,13 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Date;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BitcoinVersionParser {
     
-    private static final Logger logger = Logger.getLogger(BitcoinVersionParser.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(BitcoinVersionParser.class);
     private static final String ADDR = "Addr";
     private static final String ESPACE = " ";
     
@@ -25,9 +28,9 @@ public class BitcoinVersionParser {
         long services = readLong();
         long timestamp = readLong();
 
-        logger.log(Level.INFO, "Version: {}", version);
-        logger.log(Level.INFO, "Services: 0x{}", Long.toHexString(services));
-        logger.log(Level.INFO, "Timestamp: {} ({})", timestamp, new java.util.Date(timestamp * 1000));
+        logger.info("Version: {}", version);
+        logger.info("Services: 0x{}", Long.toHexString(services));
+        logger.info("Timestamp: {} ({})", timestamp, new Date(timestamp * 1000));
 
         // address recue
         decodeAddress("recv");
@@ -36,20 +39,20 @@ public class BitcoinVersionParser {
         decodeAddress("from");
 
         long nonce = buffer.getLong();
-        logger.log(Level.INFO, "Nonce: 0x{}", Long.toHexString(nonce));
+        logger.info("Nonce: 0x{}", Long.toHexString(nonce));
 
         // User agent
         String userAgent = readVarStr();
-        logger.log(Level.INFO, "User agent: {}", userAgent);
+        logger.info("User agent: {}", userAgent);
 
         int startHeight = readInt();
-        logger.log(Level.INFO, "Start height: {}", startHeight);
+        logger.info("Start height: {}", startHeight);
 
         if (hasRemaining()) {
             byte relayByte = buffer.get();
-            logger.log(Level.INFO, "Relay: {}", (relayByte != 0));
+            logger.info("Relay: {}", (relayByte != 0));
         } else {
-            logger.log(Level.INFO, "Relay: not present");
+            logger.info("Relay: not present");
         }
     }
 
@@ -67,9 +70,9 @@ public class BitcoinVersionParser {
         buffer.get(ipBytes);
         int port = Short.toUnsignedInt(buffer.getShort());
 
-        logger.log(Level.INFO, ADDR + ESPACE + prefix.toLowerCase() + " services: 0x" + Long.toHexString(services));
-        logger.log(Level.INFO, ADDR + ESPACE + prefix.toLowerCase() + " IP: " + IpUtils.inetAddressFromBytes(ipBytes).getHostAddress());
-        logger.log(Level.INFO, ADDR + ESPACE + prefix.toLowerCase() + " port: " + port);
+        logger.info(ADDR + ESPACE + prefix.toLowerCase() + " services: 0x" + Long.toHexString(services));
+        logger.info(ADDR + ESPACE + prefix.toLowerCase() + " IP: " + IpUtils.inetAddressFromBytes(ipBytes).getHostAddress());
+        logger.info(ADDR + ESPACE + prefix.toLowerCase() + " port: " + port);
     }
 
     private String readVarStr() throws Exception {
