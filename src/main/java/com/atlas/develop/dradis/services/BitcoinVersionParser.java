@@ -26,7 +26,9 @@ public class BitcoinVersionParser {
         long timestamp = readLong();
 
         logger.info("Version: {}", version);
-        logger.info("Services: 0x{}", Long.toHexString(services));
+        if (logger.isInfoEnabled()) {
+            logger.info("Services: 0x{}", Long.toHexString(services));
+        }
         logger.info("Timestamp: {} ({})", timestamp, new Date(timestamp * 1000));
 
         // address recue
@@ -36,8 +38,9 @@ public class BitcoinVersionParser {
         decodeAddress("from");
 
         long nonce = buffer.getLong();
-        logger.info("Nonce: 0x{}", Long.toHexString(nonce));
-
+        if (logger.isInfoEnabled()) {
+            logger.info("Nonce: 0x{}", Long.toHexString(nonce));
+        }
         // User agent
         String userAgent = readVarStr();
         logger.info("User agent: {}", userAgent);
@@ -67,9 +70,11 @@ public class BitcoinVersionParser {
         buffer.get(ipBytes);
         int port = Short.toUnsignedInt(buffer.getShort());
 
-        logger.info("{} {} services: 0x{}", ADDR, prefix.toLowerCase(), Long.toHexString(services));
-        logger.info("{} {} IP: {}", ADDR, prefix.toLowerCase(), IpUtils.inetAddressFromBytes(ipBytes).getHostAddress());
-        logger.info("{} {} port: {}", ADDR, prefix.toLowerCase(), port);
+        if (logger.isInfoEnabled()) {
+            logger.info("{} {} services: 0x{}", ADDR, prefix.toLowerCase(), Long.toHexString(services));
+            logger.info("{} {} IP: {}", ADDR, prefix.toLowerCase(), IpUtils.inetAddressFromBytes(ipBytes).getHostAddress());
+            logger.info("{} {} port: {}", ADDR, prefix.toLowerCase(), port);
+        }
     }
 
     private String readVarStr() throws Exception {
