@@ -35,7 +35,7 @@ public class HandShakeService {
             // 2. Lire réponse (attente de "version" ou "verack")
             byte[] header = in.readNBytes(24);
             if (header.length < 24) {
-                logger.error("❌ Header incomplet : {] octets", header.length);
+                logger.error("❌ Header incomplet : {} octets", header.length);
                 return;
             }
 
@@ -64,7 +64,7 @@ public class HandShakeService {
         } catch (SocketTimeoutException e) {
             logger.error("⏰ Timeout de réception depuis {}", peer.getIp().getHostAddress());
         } catch (IOException e) {
-            logger.error("❌ Handshake échoué avec {} : ", peer.getIp().getHostAddress(), e.getMessage());
+            logger.error("❌ Handshake échoué avec {} : {}", peer.getIp().getHostAddress(), e.getMessage());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
