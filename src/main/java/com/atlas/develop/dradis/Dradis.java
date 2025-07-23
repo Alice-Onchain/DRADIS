@@ -38,8 +38,8 @@ public class Dradis {
 
         if (peers.isEmpty()) {
             // 🔌 Tentative de connexion à un peer connu (DNS seed)
-            PeerDiscovery PeerDiscovery = new PeerDiscovery();
-            List<InetAddress> discoveredPeers = PeerDiscovery.discoverFromDNSSeed("seed.bitcoin.sipa.be");
+            PeerDiscovery peerDiscovery = new PeerDiscovery();
+            List<InetAddress> discoveredPeers = peerDiscovery.discoverFromDNSSeed("seed.bitcoin.sipa.be");
 
             // Ensuite les transformer en Peer et écrire dans peers.dat
             List<Peer> peerList = discoveredPeers
@@ -59,7 +59,7 @@ public class Dradis {
             }
 
         } else {
-            logger.log(Level.INFO, "Peers existants : " + peers.size());
+            logger.log(Level.INFO, "Peers existants : {}", peers.size());
 
             HandShakeService handShakeService = new HandShakeService();
 
