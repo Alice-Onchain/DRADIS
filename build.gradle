@@ -30,6 +30,10 @@ if (System.getenv("CI") == "true") {
             property "sonar.projectKey", "Alice-Onchain_DRADIS"
             property "sonar.organization", "alice-onchain"
             property "sonar.host.url", "https://sonarcloud.io"
+
+            // Ajout explicite des chemins sources/tests
+            property "sonar.sources", "src/main/java"
+            property "sonar.tests", "src/test/java"
         }
     }
 } else {
