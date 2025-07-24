@@ -31,7 +31,11 @@ class PeerDataReaderTest {
             (byte) 0x20, (byte) 0x89 // 8333 = 0x2089
         };
 
-        Peer peer = service.readOnePeer( new DataInputStream(new ByteArrayInputStream(peerData)));
+        Peer peer = service.readOnePeer(
+                new DataInputStream(
+                        new ByteArrayInputStream(peerData)
+                )
+        );
 
         // Vérifications
         assertEquals(1634567890L, peer.getTimestamp());
