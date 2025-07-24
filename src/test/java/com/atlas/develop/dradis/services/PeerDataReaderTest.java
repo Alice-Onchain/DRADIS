@@ -14,7 +14,7 @@ class PeerDataReaderTest {
     private final PeerDataReader service = new PeerDataReader();
 
     @Test
-    void readOnePeer_should_be_true() throws IOException {
+    public void readOnePeer_should_be_true() throws IOException {
         byte[] peerData = new byte[] {
             // Timestamp (big-endian) - 1634567890
             (byte) 0x61, (byte) 0x05, (byte) 0xD7, (byte) 0x32, // 1634567890 -> 0x61 0x05 0xD7 0x32
@@ -23,7 +23,9 @@ class PeerDataReaderTest {
             (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, // 4 octets de 0
             (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01, // 1 en dernier octet
             // IP (16 bytes) - 192.0.2.1 en IPv6 format
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, // 12 octets de 0
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, // 10 octets de 0
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+            (byte) 0x00, (byte) 0x00,
             (byte) 0xFF, (byte) 0xFF, // IPv4 mapped prefix
             (byte) 0xC0, (byte) 0x00, // 192.0
             (byte) 0x02, (byte) 0x01, // 2.1
@@ -31,11 +33,7 @@ class PeerDataReaderTest {
             (byte) 0x20, (byte) 0x89 // 8333 = 0x2089
         };
 
-        Peer peer = service.readOnePeer(
-                new DataInputStream(
-                        new ByteArrayInputStream(peerData)
-                )
-        );
+        Peer peer = service.readOnePeer(new DataInputStream(new ByteArrayInputStream(peerData)));
 
         // Vérifications
         assertEquals(1634567890L, peer.getTimestamp());
@@ -43,5 +41,4 @@ class PeerDataReaderTest {
         assertEquals(InetAddress.getByName("192.0.2.1"), peer.getIp());
         assertEquals(8333, peer.getPort());
     }
-
 }
