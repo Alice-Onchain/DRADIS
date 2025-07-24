@@ -16,12 +16,12 @@ class PeerDataReaderTest {
     @Test
     public void readOnePeer_should_be_true() throws IOException {
         byte[] peerData = new byte[] {
-            // Timestamp (big-endian) - 1634567890
-            (byte) 0x61, (byte) 0x05, (byte) 0xD7, (byte) 0x32, // 1634567890 -> 0x61 0x05 0xD7 0x32
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, // 4 octets de 0 pour compléter les 8
+            // Timestamp (little-endian version of 1634567890)
+            (byte) 0xD2, (byte) 0x86, (byte) 0x6D, (byte) 0x61, // LSB
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,  // MSB
             // Services (big-endian) - 1
+            (byte) 0x01, (byte) 0x00, (byte) 0x00, (byte) 0x00, // 1 en dernier octet
             (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, // 4 octets de 0
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01, // 1 en dernier octet
             // IP (16 bytes) - 192.0.2.1 en IPv6 format
             (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, // 10 octets de 0
             (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
@@ -30,7 +30,7 @@ class PeerDataReaderTest {
             (byte) 0xC0, (byte) 0x00, // 192.0
             (byte) 0x02, (byte) 0x01, // 2.1
             // Port (big-endian) - 8333
-            (byte) 0x20, (byte) 0x89 // 8333 = 0x2089
+            (byte) 0x8D, (byte) 0x20 // 8333 = 0x2089
         };
 
         Peer peer = service.readOnePeer(new DataInputStream(new ByteArrayInputStream(peerData)));
