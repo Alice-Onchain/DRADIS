@@ -32,6 +32,12 @@ jobs:
       - name: Run unit tests
         run: ./gradlew test
 
+      - name: Upload test report
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-report
+          path: build/reports/tests/test/index.html
+
       - name: SonarQube Scan
         if: github.event_name == 'pull_request'
         env:
