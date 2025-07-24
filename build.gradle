@@ -1,0 +1,60 @@
+plugins {
+    id 'java'
+    id 'jacoco'
+    id "org.sonarqube" version "4.4.1.3373"
+}
+
+group = 'com.atlas.develop'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.slf4j:slf4j-api:2.0.17'
+    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.25.1'
+    implementation 'org.apache.logging.log4j:log4j-core:2.25.1'
+    implementation 'org.apache.logging.log4j:log4j-api:2.25.1'
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+jacoco {
+    toolVersion = "0.8.9"  // ou la version stable que tu veux
+}
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport // Génère le rapport après les tests
+}
+
+jacocoTestReport {
+    dependsOn test // tests doivent être exécutés avant le rapport
+    reports {
+        xml.required = true    // SonarQube lit ce fichier XML
+        csv.required = false
+        html.required = false
+    }
+}
+
+// Only configure SonarQube if running in CI
+if (System.getenv("CI") == "true") {
+    sonar {
+        properties {
+            property "sonar.projectKey", "Alice-Onchain_DRADIS"
+            property "sonar.organization", "alice-onchain"
+            property "sonar.host.url", "https://sonarcloud.io"
+
+            // Ajout explicite des chemins sources/tests
+            property "sonar.sources", "src/main/java"
+            property "sonar.tests", "src/test/java"
+        }
+    }
+
+} else {
+    // Optionally, you can disable the sonar task locally to avoid errors if developers try to run it
+    tasks.named("sonar").configure {
+        enabled = false
+    }
+}
